@@ -23,14 +23,36 @@ switch (IdentificarComando){
     case "listar":
         if (tarefas.length === 0){
             console.log("Nenhuma tarefa foi cadastrada ainda")
-        }else{
-            tarefas.forEach(tarefa =>{
-                console.log(`ID: ${tarefa.id} `);
-                console.log(`Descrição: ${tarefa.descricao} `);
-                console.log(`Status: ${tarefa.status} `);
-                console.log(`Hora: ${tarefa.dataCriacao} `);
-            })
+            break;
         }
+        const filtro = process.argv[3];
+        const statusPorFiltro = {
+            pendentes : "pendente",
+            concluidas: "concluída"
+        };
+        if (filtro && !statusPorFiltro[filtro]){
+            console.log("Filtro inválido. Use `pendentes` ou `concluidas`")
+            break;
+        }
+        let tarefasExibidas;
+
+        if(filtro){
+            tarefasExibidas = tarefas.filter(tarefa => tarefa.status === statusPorFiltro[filtro]);
+
+        }else{
+            tarefasExibidas = tarefas;
+        }
+        if(tarefasExibidas.length === 0){
+            console.log("Nenhuma tarefa encontrada para esse filtro")
+            break;
+        }
+    
+        tarefasExibidas.forEach(tarefa =>{
+            console.log(`ID: ${tarefa.id} `);
+            console.log(`Descrição: ${tarefa.descricao} `);
+            console.log(`Status: ${tarefa.status} `);
+            console.log(`Criada em: ${new Date(tarefa.dataCriacao).toLocaleString("pt-BR")}`);
+            });
         break;
     case "adicionar":
         const descricao = process.argv.slice(3).join(" ").trim();
@@ -38,9 +60,12 @@ switch (IdentificarComando){
             console.log("Você deve informar a descrição da tarefa")
             break;
         }
-        const NovoId = tarefas.length + 1; //ver outra forma de fazer isso
+        let novoId = 1;
+        while (tarefas.some(tarefa=>tarefa.id === novoId)){
+            novoId++;
+        }
         const tarefa = {
-            id: NovoId,
+            id: novoId,
             descricao: descricao,
             status: "pendente",
             dataCriacao: new Date().toISOString()
@@ -75,11 +100,43 @@ switch (IdentificarComando){
                 salvarTarefas(tarefas);
                 console.log(`Tarefa #${id} removida.`);
                 break;
+    case "editar": {
+        const id = Number(process.argv[3]);
+        const novaDescricao = process.argv.slice(4).join(" ").trim();
+
+        if(!Number.isInteger(id) || id <= 0){
+            console.log("Informe um ID válido")
+            break;
+        }
+        if (novaDescricao === ""){
+            console.log("Informe uma nova descrição");
+            break;
+        }
+        const tarefa = tarefas.find(tarefa => tarefa.id === id);
+
+        if (!tarefa){
+            console.log(`Não existe uma tarefa com esse ID`)
+            break;
+        }
+        tarefa.descricao = novaDescricao;
+        salvarTarefas(tarefas);
+        console.log(`Descrção da tarefa ${id} foi atualizada`);
+        break;
+    }
     case "ajuda":
-        console.log("Aqui vão os comandos possíveis: listar, adicionar, concluir e remover") //transformar isso em uma lista com comandos
+       console.log(`
+        Comandos disponíveis:
+        node index.js ajuda
+        node index.js adicionar "descrição"
+        node index.js listar
+        node index.js listar pendentes
+        node index.js listar concluidas
+        node index.js concluir <id>
+        node index.js remover <id>
+        node index.js editar <id> "nova descrição"
+        `);
         break;
     default:
         console.log("Esse comando não funciona, consulte o comando ajuda para ver os argumentos possíveis")
 
 }
-//Regras 

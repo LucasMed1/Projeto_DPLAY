@@ -27,3 +27,19 @@ switch (IdentificarComando){
 
 
 //Armazenamento
+
+const fs = require("node:fs");
+let tarefas;
+if (fs.existsSync("tarefas.json")){
+    const conteudo = fs.readFileSync("tarefas.json", "utf8");
+    tarefas = JSON.parse(conteudo);
+}else{
+    tarefas = [];
+}
+
+function salvarTarefas(tarefas){
+    const conteudo = JSON.stringify(tarefas, null, 2)
+    fs.writeFileSync("tarefas.json", conteudo, "utf8")
+}
+
+salvarTarefas(tarefas);

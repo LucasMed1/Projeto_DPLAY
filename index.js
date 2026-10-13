@@ -1,4 +1,4 @@
-//Armazenamento
+// Carrega as tarefas salvas ou começa com uma lista vazia
 
 const fs = require("node:fs");
 let tarefas;
@@ -10,17 +10,19 @@ if (fs.existsSync("tarefas.json")){
 }
 
 function salvarTarefas(tarefas){
+    // Converte a lista para JSON e atualiza o arquivo
     const conteudo = JSON.stringify(tarefas, null, 2)
     fs.writeFileSync("tarefas.json", conteudo, "utf8")
 }
 
 
-//Entradas (cada tarefa tem nome, id, descrição e status)
+// process.argv[2] tem o comando digitado no terminal
 
 const IdentificarComando = process.argv[2];
 
 switch (IdentificarComando){
     case "listar":
+        // Traduz os filtros do terminal para os status salvos nas tarefas
         if (tarefas.length === 0){
             console.log("Nenhuma tarefa foi cadastrada ainda")
             break;
@@ -47,6 +49,7 @@ switch (IdentificarComando){
             break;
         }
     
+        // A data fica em ISO no arquivo
         tarefasExibidas.forEach(tarefa =>{
             console.log(`ID: ${tarefa.id} `);
             console.log(`Descrição: ${tarefa.descricao} `);
@@ -60,6 +63,7 @@ switch (IdentificarComando){
             console.log("Você deve informar a descrição da tarefa")
             break;
         }
+        // Procura o primeiro ID que ainda não está sendo usado
         let novoId = 1;
         while (tarefas.some(tarefa=>tarefa.id === novoId)){
             novoId++;
@@ -83,6 +87,7 @@ switch (IdentificarComando){
         if (!tarefa) {
             console.log(`Não existe tarefa com o ID ${id}.`);
             break;}
+        // Atualiza o status e salva a lista modificada
         tarefa.status = "concluída";
         salvarTarefas(tarefas);
         console.log(`Tarefa #${id} concluída.`);
@@ -96,6 +101,7 @@ switch (IdentificarComando){
             if (indice === -1) {
                 console.log(`Não existe tarefa com o ID ${id}.`);
                 break;}
+                // Remove pelo índice encontrado e salva a lista atualizada
                 tarefas.splice(indice, 1);
                 salvarTarefas(tarefas);
                 console.log(`Tarefa #${id} removida.`);
@@ -118,6 +124,7 @@ switch (IdentificarComando){
             console.log(`Não existe uma tarefa com esse ID`)
             break;
         }
+        // Altera somente a descrição
         tarefa.descricao = novaDescricao;
         salvarTarefas(tarefas);
         console.log(`Descrção da tarefa ${id} foi atualizada`);
